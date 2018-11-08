@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iterator>
 #include <random>
+#include <type_traits>
 #include <vector>
 
 #include <ziggurat.hpp>
@@ -105,4 +106,27 @@ TEST_CASE("standard_normal_distribution - generates normally distributed numbers
     }
 
     CHECK(D < critical_value);
+}
+
+TEST_CASE("standard_normal_distribution::result_type - is the template argument")
+{
+    using D1 = cxx::standard_normal_distribution<float>;
+    using D2 = cxx::standard_normal_distribution<double>;
+
+    CHECK(std::is_same<D1::result_type, float>::value);
+    CHECK(std::is_same<D2::result_type, double>::value);
+}
+
+TEST_CASE("standard_normal_distribution::param_type - is empty and comparable")
+{
+    using D = cxx::standard_normal_distribution<double>;
+    using P = D::param_type;
+
+    P p1;
+    P p2;
+
+    CHECK(p1 == p2);
+    CHECK_FALSE(p1 != p2);
+
+    CHECK(std::is_same<P::distribution_type, D>::value);
 }

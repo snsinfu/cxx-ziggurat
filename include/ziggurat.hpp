@@ -92,6 +92,23 @@ namespace cxx
         using ziggurat = ziggurat_detail::normal_ziggurat<T>;
 
     public:
+        using result_type = T;
+
+        struct param_type
+        {
+            using distribution_type = standard_normal_distribution;
+
+            bool operator==(param_type const&) const
+            {
+                return true;
+            }
+
+            bool operator!=(param_type const&) const
+            {
+                return false;
+            }
+        };
+
         template<typename URNG>
         T operator()(URNG& random)
         {
