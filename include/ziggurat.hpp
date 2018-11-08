@@ -44,6 +44,12 @@ namespace cxx
             return (num & (num + 1)) == 0;
         }
 
+        // log2 computes the base-2 logarithm of num truncated to integer.
+        inline constexpr std::size_t log2(std::uint64_t num)
+        {
+            return num / 2 ? 1 + log2(num / 2) : 0;
+        }
+
         // generate_bits draws N random bits from given random number generator.
         template<std::size_t N, typename URNG>
         inline std::uint64_t generate_bits(URNG& random)
@@ -110,16 +116,16 @@ namespace cxx
         };
 
         template<typename URNG>
-        T operator()(URNG& random)
+        inline T operator()(URNG& random)
         {
             return sample(random);
         }
 
     private:
         template<typename URNG>
-        T sample(URNG& random) const
+        inline T sample(URNG& random) const
         {
-            constexpr std::size_t bit_count = std::numeric_limits<T>::digits + 8;
+            constexpr std::size_t bit_count = ziggurat_detail::log2(URNG::max() - URNG::min());
 
             for (;;)
             {
@@ -133,7 +139,7 @@ namespace cxx
 
                 auto const x = uniform * lower_edge;
 
-                if (x < upper_edge) { // likely
+                if (__builtin_expect(x < upper_edge, true)) {
                     return sign * x;
                 }
 
@@ -141,18 +147,14 @@ namespace cxx
                     return sign * sample_from_tail(random);
                 }
 
-                // Rejection sampling from the interval [upper_edge, lower_edge].
-                std::uniform_real_distribution<T> sample(
-                    ziggurat_detail::gaussian(lower_edge),
-                    ziggurat_detail::gaussian(upper_edge)
-                );
-                if (sample(random) < ziggurat_detail::gaussian(x)) {
+                if (check_accept(random, lower_edge, upper_edge, x)) {
                     return sign * x;
                 }
             }
         }
 
         template<typename URNG>
+        __attribute__((noinline))
         T sample_from_tail(URNG& random) const
         {
             T const tail_edge = ziggurat::edges[1];
@@ -166,6 +168,18 @@ namespace cxx
             } while (2 * y < x * x);
 
             return tail_edge + x;
+        }
+
+        template<typename URNG>
+        __attribute__((noinline))
+        bool check_accept(URNG& random, T lower_edge, T upper_edge, T x) const
+        {
+            // Rejection sampling from the interval [upper_edge, lower_edge].
+            std::uniform_real_distribution<T> sample(
+                ziggurat_detail::gaussian(lower_edge),
+                ziggurat_detail::gaussian(upper_edge)
+            );
+            return sample(random) < ziggurat_detail::gaussian(x);
         }
     };
 
