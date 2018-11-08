@@ -33,6 +33,15 @@
 #include <random>
 
 
+#if defined(__GNUC__)
+# define ZIGGURAT_LIKELY(x) __builtin_expect((x), 1)
+# define ZIGGURAT_NOINLINE __attribute__((noinline))
+#else
+# define ZIGGURAT_LIKELY(x) (x)
+# define ZIGGURAT_NOINLINE
+#endif
+
+
 namespace cxx
 {
     namespace ziggurat_detail
@@ -139,7 +148,7 @@ namespace cxx
 
                 auto const x = uniform * lower_edge;
 
-                if (__builtin_expect(x < upper_edge, true)) {
+                if (ZIGGURAT_LIKELY(x < upper_edge)) {
                     return sign * x;
                 }
 
@@ -154,7 +163,7 @@ namespace cxx
         }
 
         template<typename URNG>
-        __attribute__((noinline))
+        ZIGGURAT_NOINLINE
         T sample_from_tail(URNG& random) const
         {
             T const tail_edge = ziggurat::edges[1];
@@ -171,7 +180,7 @@ namespace cxx
         }
 
         template<typename URNG>
-        __attribute__((noinline))
+        ZIGGURAT_NOINLINE
         bool check_accept(URNG& random, T lower_edge, T upper_edge, T x) const
         {
             // Rejection sampling from the interval [upper_edge, lower_edge].
@@ -220,5 +229,8 @@ namespace cxx
         T(8.56006539842194211e-08)
     };
 }
+
+#undef ZIGGURAT_LIKELY
+#undef ZIGGURAT_NOINLINE
 
 #endif
