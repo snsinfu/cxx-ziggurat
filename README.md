@@ -7,17 +7,18 @@
 Header-only C++ library of a fast normal random number generator implementing
 the [ziggurat algorithm][ziggurat].
 
-[Download][header-url]
-
 [cxx-badge]: https://img.shields.io/badge/C%2B%2B-11-orange.svg
 [license-badge]: https://img.shields.io/badge/license-Boost-blue.svg
 [license-url]: https://raw.githubusercontent.com/snsinfu/cxx-ziggurat/master/LICENSE.txt
 [travis-badge]: https://travis-ci.org/snsinfu/cxx-ziggurat.svg?branch=master
 [travis-url]: https://travis-ci.org/snsinfu/cxx-ziggurat
 [ziggurat]: https://en.wikipedia.org/wiki/Ziggurat_algorithm
-[header-url]: https://raw.githubusercontent.com/snsinfu/cxx-ziggurat/master/include/ziggurat.hpp
 
 ## Usage
+
+Download and include [ziggurat.hpp][header-url]. The header defines
+`cxx::ziggurat_normal_distribution<T>` class template. It can be used as a
+replacement for `std::normal_distribution`.
 
 ```c++
 #include <iostream>
@@ -27,10 +28,12 @@ the [ziggurat algorithm][ziggurat].
 int main()
 {
     std::mt19937_64 random;
-    cxx::standard_normal_distribution<double> normal;
+    cxx::ziggurat_normal_distribution<double> normal{1.2, 0.8};
     std::cout << normal(random) << '\n';
 }
 ```
+
+[header-url]: https://raw.githubusercontent.com/snsinfu/cxx-ziggurat/master/include/ziggurat.hpp
 
 ## Testing
 
