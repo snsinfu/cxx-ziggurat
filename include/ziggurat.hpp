@@ -29,7 +29,10 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <ios>
+#include <istream>
 #include <limits>
+#include <ostream>
 #include <random>
 
 
@@ -99,38 +102,180 @@ namespace cxx
         };
     }
 
-    // standard_normal_distribution implements the fast ziggurat algorithm of
-    // normal random number generation.
+    // ziggurat_normal_distribution generates normal random numbers using the fast
+    // ziggurat algorithm.
     template<typename T>
-    class standard_normal_distribution
+    class ziggurat_normal_distribution
     {
+        // Pull in the ziggurat table to use.
         using ziggurat = ziggurat_detail::normal_ziggurat<T>;
 
     public:
+        // result_type is an alias of T.
         using result_type = T;
 
+        // param_type holds distribution parameters.
         struct param_type
         {
-            using distribution_type = standard_normal_distribution;
+            using distribution_type = ziggurat_normal_distribution;
 
-            bool operator==(param_type const&) const
+            // Default constructor initializes mean to 0 and stddev to 1.
+            param_type() = default;
+
+            // Single-parameter constructor initializes mean and stddev to given
+            // values.
+            explicit param_type(result_type mean, result_type stddev = 1)
+                : mean_{mean}, stddev_{stddev}
             {
-                return true;
             }
 
-            bool operator!=(param_type const&) const
+            // mean returns the mean parameter.
+            inline result_type mean() const
             {
-                return false;
+                return mean_;
             }
+
+            // stddev returns the stddev parameter.
+            inline result_type stddev() const
+            {
+                return stddev_;
+            }
+
+            // Equality comparison p1 == p2 returns true if and only if mean and
+            // stddev parameters, respectively, are the same for p1 and p2.
+            friend bool operator==(param_type const& p1, param_type const& p2)
+            {
+                return p1.mean_ == p2.mean_ && p1.stddev_ == p2.stddev_;
+            }
+
+            friend bool operator!=(param_type const& p1, param_type const& p2)
+            {
+                return !(p1 == p2);
+            }
+
+            // Stream output write mean and stddev to a stream.
+            template<typename Char, typename Tr>
+            friend std::basic_ostream<Char, Tr>& operator<<(
+                std::basic_ostream<Char, Tr>& os,
+                param_type const& param
+            )
+            {
+                using sentry_type = typename std::basic_ostream<Char, Tr>::sentry;
+
+                // FIXME: flags
+
+                if (sentry_type sentry{os}) {
+                    Char const space = os.widen(' ');
+                    os << param.mean_ << space << param.stddev_;
+                }
+
+                return os;
+            }
+
+            // Stream input reads mean and stddev from a stream.
+            template<typename Char, typename Tr>
+            friend std::basic_istream<Char, Tr>& operator>>(
+                std::basic_istream<Char, Tr>& is,
+                param_type& param
+            )
+            {
+                using sentry_type = typename std::basic_istream<Char, Tr>::sentry;
+
+                // FIXME: flags
+
+                if (sentry_type sentry{is}) {
+                    param_type tmp;
+                    if (is >> tmp.mean_ >> tmp.stddev_) {
+                        param = tmp;
+                    }
+                }
+
+                return is;
+            }
+
+        private:
+            result_type mean_ = 0;
+            result_type stddev_ = 1;
         };
 
+        // Default constructor creates a normal distribution with mean = 0 and
+        // stddev = 1.
+        ziggurat_normal_distribution() = default;
+
+        // This constructor creates a normal distribution with given mean and
+        // stddev.
+        explicit ziggurat_normal_distribution(result_type mean, result_type stddev = 1)
+            : param_{mean, stddev}
+        {
+        }
+
+        // This constructor creates a normal distribution having given
+        // parameters.
+        explicit ziggurat_normal_distribution(param_type const& param)
+            : param_{param}
+        {
+        }
+
+        // reset does nothing; this is a RandomNumberDistribution requirement.
+        void reset()
+        {
+        }
+
+        // Invoking a distribution with a random number engine returns a newly
+        // generated normal random number with the preconfigured parameters.
         template<typename URNG>
         inline T operator()(URNG& random)
         {
-            return sample(random);
+            return param_.mean() + param_.stddev() * sample(random);
+        }
+
+        // Invoking a distribution with a random number engine and a parameter
+        // object returns a newly generated normal random number with given
+        // parameters.
+        template<typename URNG>
+        inline T operator()(URNG& random, param_type const& param)
+        {
+            return param.mean() + param.stddev() * sample(random);
+        }
+
+        // mean returns the mean parameter of this distribution.
+        result_type mean() const
+        {
+            return param_.mean();
+        }
+
+        // stddev returns the stddev parameter of this distribution.
+        result_type stddev() const
+        {
+            return param_.stddev();
+        }
+
+        // param returns the parameters of this distribution as a param_type.
+        param_type param() const
+        {
+            return param_;
+        }
+
+        // param sets the parameters of this distribution.
+        void param(param_type const& param)
+        {
+            param_ = param;
+        }
+
+        // min returns -infinity.
+        result_type min() const
+        {
+            return -std::numeric_limits<result_type>::infinity();
+        }
+
+        // max returns +infinity.
+        result_type max() const
+        {
+            return std::numeric_limits<result_type>::infinity();
         }
 
     private:
+        // sample generates a standard normal number.
         template<typename URNG>
         inline T sample(URNG& random) const
         {
@@ -184,14 +329,62 @@ namespace cxx
         bool check_accept(URNG& random, T lower_edge, T upper_edge, T x) const
         {
             // Rejection sampling from the interval [upper_edge, lower_edge].
-            std::uniform_real_distribution<T> sample(
+            std::uniform_real_distribution<T> uniform(
                 ziggurat_detail::gaussian(lower_edge),
                 ziggurat_detail::gaussian(upper_edge)
             );
-            return sample(random) < ziggurat_detail::gaussian(x);
+            return uniform(random) < ziggurat_detail::gaussian(x);
         }
+
+    private:
+        param_type param_;
     };
 
+    // Equality comparison d1 == d2 compares the equality of distribution
+    // parameters.
+    template<typename T>
+    bool operator==(
+        ziggurat_normal_distribution<T> const& d1,
+        ziggurat_normal_distribution<T> const& d2
+    )
+    {
+        return d1.param() == d2.param();
+    }
+
+    template<typename T>
+    bool operator!=(
+        ziggurat_normal_distribution<T> const& d1,
+        ziggurat_normal_distribution<T> const& d2
+    )
+    {
+        return !(d1 == d2);
+    }
+
+    // Stream output operator writes mean and stddev parameters to a stream.
+    template<typename Char, typename Tr, typename T>
+    std::basic_ostream<Char, T>& operator<<(
+        std::basic_ostream<Char, T>& os,
+        ziggurat_normal_distribution<T> const& dist
+    )
+    {
+        return os << dist.param();
+    }
+
+    // Stream input operator reads mean and stddev parameters from a stream.
+    template<typename Char, typename Tr, typename T>
+    std::basic_istream<Char, T>& operator>>(
+        std::basic_istream<Char, T>& is,
+        ziggurat_normal_distribution<T>& dist
+    )
+    {
+        typename ziggurat_normal_distribution<T>::param_type param;
+        if (is >> param) {
+            dist.param(param);
+        }
+        return is;
+    }
+
+    // Pre-computed ziggurat table.
     template<typename T>
     T const ziggurat_detail::normal_ziggurat<T>::edges[] = {
         T(3.71308624674036292), T(3.44261985589665231), T(3.22308498457861869), T(3.083228858214214),

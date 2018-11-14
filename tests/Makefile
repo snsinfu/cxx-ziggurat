@@ -23,7 +23,7 @@ CXXFLAGS = \
 
 OBJECTS = \
   main.o \
-  test_normal_distribution.o
+  test_ziggurat_normal_distribution.o
 
 ARTIFACTS = \
   $(OBJECTS) \
@@ -41,4 +41,4 @@ clean:
 main: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
-test_normal_distribution.o: ../include/ziggurat.hpp
+test_ziggurat_normal_distribution.o: ../include/ziggurat.hpp

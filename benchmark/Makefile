@@ -1,4 +1,6 @@
 OPTFLAGS = \
+  -mtune=native \
+  -funsafe-math-optimizations \
   -O2
 
 INCLUDES = \

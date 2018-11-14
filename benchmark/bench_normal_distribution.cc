@@ -53,17 +53,17 @@ int main()
 
     std::cout << "double\n";
     std::cout << "MT64 std       " << measure(mt64, std::normal_distribution<double>{}) << '\n';
-    std::cout << "MT64 ziggurat  " << measure(mt64, cxx::standard_normal_distribution<double>{}) << '\n';
+    std::cout << "MT64 ziggurat  " << measure(mt64, cxx::ziggurat_normal_distribution<double>{}) << '\n';
     std::cout << "MT32 std       " << measure(mt32, std::normal_distribution<double>{}) << '\n';
-    std::cout << "MT32 ziggurat  " << measure(mt32, cxx::standard_normal_distribution<double>{}) << '\n';
+    std::cout << "MT32 ziggurat  " << measure(mt32, cxx::ziggurat_normal_distribution<double>{}) << '\n';
     std::cout << "JSF  std       " << measure(jsf, std::normal_distribution<double>{}) << '\n';
-    std::cout << "JSF  ziggurat  " << measure(jsf, cxx::standard_normal_distribution<double>{}) << '\n';
+    std::cout << "JSF  ziggurat  " << measure(jsf, cxx::ziggurat_normal_distribution<double>{}) << '\n';
     std::cout << '\n';
     std::cout << "float\n";
     std::cout << "MT64 std       " << measure(mt64, std::normal_distribution<float>{}) << '\n';
-    std::cout << "MT64 ziggurat  " << measure(mt64, cxx::standard_normal_distribution<float>{}) << '\n';
+    std::cout << "MT64 ziggurat  " << measure(mt64, cxx::ziggurat_normal_distribution<float>{}) << '\n';
     std::cout << "MT32 std       " << measure(mt32, std::normal_distribution<float>{}) << '\n';
-    std::cout << "MT32 ziggurat  " << measure(mt32, cxx::standard_normal_distribution<float>{}) << '\n';
+    std::cout << "MT32 ziggurat  " << measure(mt32, cxx::ziggurat_normal_distribution<float>{}) << '\n';
     std::cout << "JSF  std       " << measure(jsf, std::normal_distribution<float>{}) << '\n';
-    std::cout << "JSF  ziggurat  " << measure(jsf, cxx::standard_normal_distribution<float>{}) << '\n';
+    std::cout << "JSF  ziggurat  " << measure(jsf, cxx::ziggurat_normal_distribution<float>{}) << '\n';
 }
