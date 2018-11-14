@@ -440,3 +440,30 @@ TEST_CASE("ziggurat_normal_distribution - generates normally distributed numbers
 
     CHECK(D < critical_value);
 }
+
+TEST_CASE("ziggurat_normal_distribution - is serializable and deserializable")
+{
+    SECTION("float")
+    {
+        cxx::ziggurat_normal_distribution<float> dist_1{1.2F, 3.4F};
+        cxx::ziggurat_normal_distribution<float> dist_2;
+
+        std::stringstream stream;
+        stream << dist_1;
+        stream >> dist_2;
+
+        CHECK(dist_2 == dist_1);
+    }
+
+    SECTION("double")
+    {
+        cxx::ziggurat_normal_distribution<double> dist_1{1.2, 3.4};
+        cxx::ziggurat_normal_distribution<double> dist_2;
+
+        std::stringstream stream;
+        stream << dist_1;
+        stream >> dist_2;
+
+        CHECK(dist_2 == dist_1);
+    }
+}

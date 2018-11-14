@@ -362,8 +362,8 @@ namespace cxx
 
     // Stream output operator writes mean and stddev parameters to a stream.
     template<typename Char, typename Tr, typename T>
-    std::basic_ostream<Char, T>& operator<<(
-        std::basic_ostream<Char, T>& os,
+    std::basic_ostream<Char, Tr>& operator<<(
+        std::basic_ostream<Char, Tr>& os,
         ziggurat_normal_distribution<T> const& dist
     )
     {
@@ -372,8 +372,8 @@ namespace cxx
 
     // Stream input operator reads mean and stddev parameters from a stream.
     template<typename Char, typename Tr, typename T>
-    std::basic_istream<Char, T>& operator>>(
-        std::basic_istream<Char, T>& is,
+    std::basic_istream<Char, Tr>& operator>>(
+        std::basic_istream<Char, Tr>& is,
         ziggurat_normal_distribution<T>& dist
     )
     {
