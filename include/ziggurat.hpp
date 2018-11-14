@@ -162,7 +162,7 @@ namespace cxx
             {
                 using sentry_type = typename std::basic_ostream<Char, Tr>::sentry;
 
-                // FIXME: flags
+                // TODO: need to normalize stream flags?
 
                 if (sentry_type sentry{os}) {
                     Char const space = os.widen(' ');
@@ -181,7 +181,7 @@ namespace cxx
             {
                 using sentry_type = typename std::basic_istream<Char, Tr>::sentry;
 
-                // FIXME: flags
+                // TODO: need to normalize stream flags?
 
                 if (sentry_type sentry{is}) {
                     param_type tmp;
