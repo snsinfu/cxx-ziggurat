@@ -467,3 +467,15 @@ TEST_CASE("ziggurat_normal_distribution - is serializable and deserializable")
         CHECK(dist_2 == dist_1);
     }
 }
+
+TEST_CASE("ziggurat_normal_distribution - is unchanged upon deserialization failure")
+{
+    cxx::ziggurat_normal_distribution<double> dist{1.2, 3.4};
+    cxx::ziggurat_normal_distribution<double> saved = dist;
+
+    std::istringstream in{"0.0 abc"};
+    bool const ok = bool(in >> dist);
+
+    CHECK_FALSE(ok);
+    CHECK(dist == saved);
+}
